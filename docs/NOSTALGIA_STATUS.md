@@ -14,19 +14,36 @@
 
 | 项目 | 当前状态 | 验证范围 |
 | --- | --- | --- |
-| Mac ARM64 原生游戏构建 | Debug 已通过；Release 构建中 | 实际 ARM64 可执行文件及 --help 已验证；仅编译成功不能证明可玩 |
+| Mac ARM64 原生游戏构建 | Debug / Release 均已通过 | 实际 ARM64 可执行文件及 --help 已验证；仅编译成功不能证明可玩 |
 | 核心测试与内存检查 | 38/38 组通过，43.24 秒 | Debug + AddressSanitizer / UndefinedBehaviorSanitizer；不含原版素材金标 |
 | 素材配置和启动前检查 | 14 项用例通过；实际中文启动脚本返回预期状态码 2 | 使用生成的资源包头和音乐文件测试失败路径、路径配置及只读行为；增加 Rosetta / ARM64 / Intel 的架构选择验证；空素材时不启动游戏 |
 | 原版素材接入 | 缺少本机素材路径 | 已检查常见 Steam、桌面、文稿与下载目录，尚未找到原版资源包 |
 | 原版画面及交互对照 | 尚未验证 | 需原版素材和相同状态的参考截图 |
 | 实际声音及完整对局 | 尚未验证 | 需原版素材和实际运行 |
 | Android / iOS | 本 fork 未验证 | 本次目标为用户的 Mac 体验 |
+| GitHub Actions | macOS / Linux 各 37/37 组通过 | 修正架构选择后的代码提交 8412cbb；不含 SDL 游戏应用或商业素材 |
 
 构建日志、测试原始结果和后续游戏截图保存在已忽略的 `artifacts/` 与 `build/`。原版素材与其衍生截图不随源码发布。
 
-本机证据：`artifacts/nostalgia-ctest.log`、`artifacts/nostalgia-full-tests-detail.log`、`artifacts/nostalgia-setup-retest.log`、`artifacts/nostalgia-launcher-smoke.json`。原生 Debug 程序位于 `build/verify/rich4-native.app`。
+本机证据：`artifacts/nostalgia-ctest.log`、`artifacts/nostalgia-full-tests-detail.log`、`artifacts/nostalgia-setup-retest.log`、`artifacts/nostalgia-launcher-smoke.json`、`artifacts/nostalgia-release-smoke.json`、`artifacts/nostalgia-release-arm64-build.log`。原生 Debug 程序位于 `build/verify/rich4-native.app`，日常启动的 Release 程序位于 `build/mac-nostalgia-arm64/rich4-native.app`。
 
-本机 Python 在 Rosetta 下报告 x86_64，硬件检测为 ARM64；启动器已验证会选择 ARM64 Homebrew，并按架构分开构建目录。早期仅按 Python 进程架构配置的 Release 链接失败，修正后的构建尚在运行；不将该失败计作成功。
+本机 Python 在 Rosetta 下报告 x86_64，硬件检测为 ARM64；启动器已验证会选择 ARM64 Homebrew，并按架构分开构建目录。修正后的 Release 构建及可执行文件检查通过。
+
+远端验证：[GitHub Actions 38845658073](https://github.com/zhujun-123/richman4-nostalgia/actions/runs/38845658073)。本地原生测试含音频合成测试一组，故为 38 组；CI 关闭 SDL 应用构建，为 37 组。启动器的 14 个用例属于其中一组，不重复加进组数。
+
+## GitHub 素材来源补查
+
+用户询问 GitHub 是否已有素材后，于 2026-10-16 检查了以下仓库的默认分支完整文件树和说明。这是本次检查结果，不代表 GitHub 上绝对不存在其他资源。
+
+| 仓库 | 查到的内容 | 对当前引擎的作用 |
+| --- | --- | --- |
+| [lhr0909/richman4-remastered](https://github.com/lhr0909/richman4-remastered) | 原生引擎、工具、测试；明确不附原版素材 | 本 fork 的源码基础 |
+| [JCRJPZB/Rich4](https://github.com/JCRJPZB/Rich4) | Cocos 项目，83 个 PNG/JPG 等媒体文件；未见 MKF/MID | 可以研究图片和实现，不能直接替代本引擎要求的完整资源包；素材授权尚未确认 |
+| [jackwangfeng/richman4](https://github.com/jackwangfeng/richman4) | 77 个人物、建筑等媒体文件；未见 MKF/MID | 同上，不是所需的完整 MKF/MID 资源集合；素材授权尚未确认 |
+| [nurockplayer/richman4-remake](https://github.com/nurockplayer/richman4-remake) | Godot 重制源码；说明中的完整素材放在私有仓库，公开树未带媒体或 MKF/MID | 不能从公开仓库直接获取其完整素材 |
+| [SiliconYC/ReactMono](https://github.com/SiliconYC/ReactMono) | 开发中的 React 经营游戏；未带媒体或 MKF/MID | 可参考网页玩法实现，不能用来补齐原版素材 |
+
+官方 [大富翁4 下载页](https://www.softstar.com.tw/Download/Download_game.aspx?gid=RICH4) 当前列出更新和修复补丁，没有完整游戏资源下载。官方完整游戏发行页为 [Steam](https://store.steampowered.com/app/2059810/?l=schinese)。本次尚未找到可供当前移植直接运行的完整公开素材包；找到部分图片不等于已取得原版地图、动画、界面、音乐和语音所需的完整数据。
 
 ## 已知还原差异
 
