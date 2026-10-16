@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | Mac ARM64 原生游戏构建 | Debug 已通过；Release 构建中 | 实际 ARM64 可执行文件及 --help 已验证；仅编译成功不能证明可玩 |
 | 核心测试与内存检查 | 38/38 组通过，43.24 秒 | Debug + AddressSanitizer / UndefinedBehaviorSanitizer；不含原版素材金标 |
-| 素材配置和启动前检查 | 10 项用例通过；实际中文启动脚本返回预期状态码 2 | 使用生成的资源包头和音乐文件测试失败路径、路径配置及只读行为；空素材时不启动游戏 |
+| 素材配置和启动前检查 | 14 项用例通过；实际中文启动脚本返回预期状态码 2 | 使用生成的资源包头和音乐文件测试失败路径、路径配置及只读行为；增加 Rosetta / ARM64 / Intel 的架构选择验证；空素材时不启动游戏 |
 | 原版素材接入 | 缺少本机素材路径 | 已检查常见 Steam、桌面、文稿与下载目录，尚未找到原版资源包 |
 | 原版画面及交互对照 | 尚未验证 | 需原版素材和相同状态的参考截图 |
 | 实际声音及完整对局 | 尚未验证 | 需原版素材和实际运行 |
@@ -24,7 +24,9 @@
 
 构建日志、测试原始结果和后续游戏截图保存在已忽略的 `artifacts/` 与 `build/`。原版素材与其衍生截图不随源码发布。
 
-本机证据：`artifacts/nostalgia-ctest.log`、`build/verify/Testing/Temporary/LastTest.log`、`artifacts/nostalgia-launcher-smoke.json`。原生程序位于 `build/verify/rich4-native.app`。
+本机证据：`artifacts/nostalgia-ctest.log`、`artifacts/nostalgia-full-tests-detail.log`、`artifacts/nostalgia-setup-retest.log`、`artifacts/nostalgia-launcher-smoke.json`。原生 Debug 程序位于 `build/verify/rich4-native.app`。
+
+本机 Python 在 Rosetta 下报告 x86_64，硬件检测为 ARM64；启动器已验证会选择 ARM64 Homebrew，并按架构分开构建目录。早期仅按 Python 进程架构配置的 Release 链接失败，修正后的构建尚在运行；不将该失败计作成功。
 
 ## 已知还原差异
 

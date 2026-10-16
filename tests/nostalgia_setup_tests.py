@@ -4,6 +4,7 @@ import io
 import json
 import os
 import struct
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -82,6 +83,29 @@ class NostalgiaSetupTests(unittest.TestCase):
         with patch.object(nostalgia, "CONFIG", config), patch.dict(os.environ, {"RICH4_ASSETS": ""}), \
                 contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(nostalgia.main(["check"]), 1)
+
+    def test_rosetta_python_selects_native_arm64(self):
+        result = subprocess.CompletedProcess([], 0, stdout="1\n", stderr="")
+        with patch.object(nostalgia.platform, "machine", return_value="x86_64"), \
+                patch.object(nostalgia.subprocess, "run", return_value=result):
+            self.assertEqual(nostalgia.native_architecture(), "arm64")
+
+    def test_native_arm64_does_not_need_rosetta_probe(self):
+        with patch.object(nostalgia.platform, "machine", return_value="arm64"), \
+                patch.object(nostalgia.subprocess, "run") as probe:
+            self.assertEqual(nostalgia.native_architecture(), "arm64")
+            probe.assert_not_called()
+
+    def test_intel_mac_keeps_x86_64(self):
+        result = subprocess.CompletedProcess([], 0, stdout="0\n", stderr="")
+        with patch.object(nostalgia.platform, "machine", return_value="x86_64"), \
+                patch.object(nostalgia.subprocess, "run", return_value=result):
+            self.assertEqual(nostalgia.native_architecture(), "x86_64")
+
+    def test_unavailable_hardware_probe_keeps_process_architecture(self):
+        with patch.object(nostalgia.platform, "machine", return_value="x86_64"), \
+                patch.object(nostalgia.subprocess, "run", side_effect=FileNotFoundError):
+            self.assertEqual(nostalgia.native_architecture(), "x86_64")
 
 
 if __name__ == "__main__":

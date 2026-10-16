@@ -68,18 +68,33 @@ def print_check(result, as_json=False):
         print("7 个资源包和 25 个音乐文件的基础检查通过。")
 
 
+def native_architecture():
+    """A Rosetta Python reports x86_64 even when the host has an ARM64 toolchain."""
+    architecture = platform.machine()
+    if architecture == "x86_64":
+        try:
+            probe = subprocess.run(["/usr/sbin/sysctl", "-in", "hw.optional.arm64"],
+                                   capture_output=True, text=True, check=False)
+            if probe.returncode == 0 and probe.stdout.strip() == "1":
+                return "arm64"
+        except OSError:
+            pass
+    return architecture
+
+
 def build_native():
     if sys.platform != "darwin":
         raise RuntimeError("此启动入口用于 macOS；其他平台请参阅 README.upstream.md")
     environment = os.environ.copy()
-    prefix = "/opt/homebrew" if platform.machine() == "arm64" else "/usr/local"
+    architecture = native_architecture()
+    prefix = "/opt/homebrew" if architecture == "arm64" else "/usr/local"
     environment["PATH"] = prefix + "/bin:" + environment.get("PATH", "")
     cmake = shutil.which("cmake", path=environment["PATH"])
     if not cmake:
         raise RuntimeError("缺少构建依赖，请先运行：brew install cmake sdl3 freetype fluid-synth pkgconf")
-    build = REPO / "build/mac-nostalgia"
+    build = REPO / ("build/mac-nostalgia-" + architecture)
     subprocess.run([cmake, "-S", str(REPO), "-B", str(build), "-DCMAKE_BUILD_TYPE=Release",
-                    "-DCMAKE_OSX_ARCHITECTURES=" + platform.machine(), "-DCMAKE_PREFIX_PATH=" + prefix,
+                    "-DCMAKE_OSX_ARCHITECTURES=" + architecture, "-DCMAKE_PREFIX_PATH=" + prefix,
                     "-DRICH4_BUILD_GAME=ON", "-DRICH4_BUILD_VIEWER=OFF", "-DRICH4_SANITIZERS=OFF",
                     "-DBUILD_TESTING=OFF"], env=environment, check=True)
     subprocess.run([cmake, "--build", str(build), "--target", "rich4-native", "--parallel",
