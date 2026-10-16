@@ -1,0 +1,26 @@
+name: Asset-free engine tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Configure engine with sanitizers
+        run: >-
+          cmake -S . -B build/core -DCMAKE_BUILD_TYPE=Debug
+          -DRICH4_BUILD_GAME=OFF -DRICH4_BUILD_VIEWER=OFF -DRICH4_SANITIZERS=ON
+      - name: Build engine and tests
+        run: cmake --build build/core --parallel 4
+      - name: Run generated-fixture tests
+        run: ctest --test-dir build/core --output-on-failure

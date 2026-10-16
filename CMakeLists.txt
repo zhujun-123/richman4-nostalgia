@@ -91,6 +91,8 @@ if(BUILD_TESTING)
   endif()
   find_package(Python3 3.9 COMPONENTS Interpreter)
   if(Python3_Interpreter_FOUND)
+    add_test(NAME nostalgia_setup_tests
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/nostalgia_setup_tests.py)
     add_test(NAME oracle_manifest_tests
       COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/oracle_manifest_tests.py)
     add_test(NAME playability_state_tests
